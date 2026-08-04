@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   validateCompleteMove,
@@ -24,9 +23,9 @@ function App() {
   const [board, setBoard] = useState(initialBoard);
 
   const [turn, setTurn] = useState("white");
-
-  const [selected, setSelected] = useState(null);
 const [gameOver, setGameOver] = useState(false);
+  const [selected, setSelected] = useState(null);
+
   const [legalMoves, setLegalMoves] = useState([]);
 
   const [moveHistory, setMoveHistory] = useState([]);
@@ -41,7 +40,20 @@ const [gameOver, setGameOver] = useState(false);
 
   const [history, setHistory] = useState([]);
 
-    const handleSquareClick = (row, col) => {
+ 
+
+  const [castleRights, setCastleRights] = useState({
+    whiteKingMoved: false,
+    blackKingMoved: false,
+
+    whiteLeftRookMoved: false,
+    whiteRightRookMoved: false,
+
+    blackLeftRookMoved: false,
+    blackRightRookMoved: false,
+  });
+
+  const handleSquareClick = (row, col) => {
     const clickedPiece = board[row][col];
 
     // Select Piece
@@ -80,57 +92,63 @@ const [gameOver, setGameOver] = useState(false);
       return;
     }
 
-        const from = selected;
+    const from = selected;
 
     const to = {
       row,
       col,
     };
 
-   const result = validateCompleteMove(
-  board,
-  from,
-  to,
-  turn,
-  castleRights
-);
+    const result = validateCompleteMove(
+      board,
+      from,
+      to,
+      turn,
+      castleRights
+    );
 
     if (!result.valid) {
 
-    setMessage("Illegal Move!");
 
-    setTimeout(() => {
+
+
+
+      setMessage("Illegal Move!");
+
+
+
+
+      setTimeout(() => {
         setMessage("");
-    }, 2000);
+      }, 2000);
 
-    setSelected(null);
+      setSelected(null);
 
-    setLegalMoves([]);
+      setLegalMoves([]);
 
-    return;
-}
+      return;
+    }
 
 
 
-    if (!result.valid) {
-  setSelected(null);
-  setLegalMoves([]);
-  return;
-}
-        // Save board for Undo
+
+    // Save board for Undo
     setHistory((prev) => [
-  ...prev,
-  {
-    board: board.map((row) => [...row]),
-    turn,
-    moveHistory: [...moveHistory],
-    capturedWhite: [...capturedWhite],
-    capturedBlack: [...capturedBlack],
-    status,
-    castleRights: { ...castleRights },
-    gameOver,
-  },
-]);
+      ...prev,
+
+
+
+      {
+        board: board.map((row) => [...row]),
+        turn,
+        moveHistory: [...moveHistory],
+        capturedWhite: [...capturedWhite],
+        capturedBlack: [...capturedBlack],
+        status,
+        castleRights: { ...castleRights },
+        gameOver,
+      },
+    ]);
 
     // Execute move using Game Engine
     const move = createMove(
@@ -150,68 +168,66 @@ const [gameOver, setGameOver] = useState(false);
       move.notation,
     ]);
 
+    // Update Castling Rights
+    const movingPiece = clickedPiece;
 
-// Update Castling Rights
+    if (movingPiece === "K") {
+      setCastleRights(prev => ({
+        ...prev,
+        whiteKingMoved: true
+      }));
+    }
 
-if (movingPiece === "K") {
-  setCastleRights(prev => ({
-    ...prev,
-    whiteKingMoved: true
-  }));
-}
+    if (movingPiece === "k") {
+      setCastleRights(prev => ({
+        ...prev,
+        blackKingMoved: true
+      }));
+    }
 
-if (movingPiece === "k") {
-  setCastleRights(prev => ({
-    ...prev,
-    blackKingMoved: true
-  }));
-}
+    if (movingPiece === "R") {
 
-if (movingPiece === "R") {
+      if (from.row === 7 && from.col === 0) {
 
-  if (from.row === 7 && from.col === 0) {
+        setCastleRights(prev => ({
+          ...prev,
+          whiteLeftRookMoved: true
+        }));
 
-    setCastleRights(prev => ({
-      ...prev,
-      whiteLeftRookMoved: true
-    }));
+      }
 
-  }
+      if (from.row === 7 && from.col === 7) {
 
-  if (from.row === 7 && from.col === 7) {
+        setCastleRights(prev => ({
+          ...prev,
+          whiteRightRookMoved: true
+        }));
 
-    setCastleRights(prev => ({
-      ...prev,
-      whiteRightRookMoved: true
-    }));
+      }
 
-  }
+    }
 
-}
+    if (movingPiece === "r") {
 
-if (movingPiece === "r") {
+      if (from.row === 0 && from.col === 0) {
 
-  if (from.row === 0 && from.col === 0) {
+        setCastleRights(prev => ({
+          ...prev,
+          blackLeftRookMoved: true
+        }));
 
-    setCastleRights(prev => ({
-      ...prev,
-      blackLeftRookMoved: true
-    }));
+      }
 
-  }
+      if (from.row === 0 && from.col === 7) {
 
-  if (from.row === 0 && from.col === 7) {
+        setCastleRights(prev => ({
+          ...prev,
+          blackRightRookMoved: true
+        }));
 
-    setCastleRights(prev => ({
-      ...prev,
-      blackRightRookMoved: true
-    }));
+      }
 
-  }
-
-}
-
-
+    }
 
     // Save captured piece
     if (move.capturedPiece !== "") {
@@ -241,141 +257,175 @@ if (movingPiece === "r") {
     setTurn(nextTurn);
 
     // Check game status
-   const gameStatus = getGameStatus(
-    move.board,
-    nextTurn
-);
+    const gameStatus = getGameStatus(
+      move.board,
+      nextTurn
+    );
 
-setStatus(gameStatus.message);
+    setStatus(gameStatus.message);
 
-if (gameStatus.gameOver) {
-    setGameOver(true);
-}
+    if (gameStatus.gameOver) {
+      setGameOver(true);
+    }
+
+    setSelected(null);
+
+    setLegalMoves([]);
   };
 
- 
+  const undoMove = () => {
+
+    if (history.length === 0) return;
+
+    const previous = history[history.length - 1];
+
+    setBoard(previous.board);
+
+    setTurn(previous.turn);
+
+    setMoveHistory(previous.moveHistory);
+
+    setCapturedWhite(previous.capturedWhite);
+
+    setCapturedBlack(previous.capturedBlack);
+
+    setStatus(previous.status);
+
+    setCastleRights(previous.castleRights);
+
+    setGameOver(previous.gameOver);
+
+    setHistory((prev) => prev.slice(0, -1));
+
+    setSelected(null);
+
+    setLegalMoves([]);
+
+  };
+
+  const restartGame = () => {
+
+    setBoard(initialBoard);
+
+    setTurn("white");
+
+    setSelected(null);
+
+    setLegalMoves([]);
+
+    setMoveHistory([]);
+
+    setCapturedWhite([]);
+
+    setCapturedBlack([]);
+
+    setStatus("");
+
+    setHistory([]);
+
+    setGameOver(false);
+
+    setCastleRights({
+      whiteKingMoved: false,
+      blackKingMoved: false,
+      whiteLeftRookMoved: false,
+      whiteRightRookMoved: false,
+      blackLeftRookMoved: false,
+      blackRightRookMoved: false,
+    });
+
+  };
+
+  return (
+    <div className="app">
+      <div className="left-panel">
+        <Timer
+          turn={turn}
+          gameOver={gameOver}
+        />
+
+        <Board
+          board={board}
+          selected={selected}
+          legalMoves={legalMoves}
+          onSquareClick={handleSquareClick}
+        />
+      </div>
+
+      <div className="right-panel">
 
 
-const undoMove = () => {
-
-  if (history.length === 0) return;
-
-  const previous = history[history.length - 1];
-
-  setBoard(previous.board);
-
-  setTurn(previous.turn);
-
-  setMoveHistory(previous.moveHistory);
-
-  setCapturedWhite(previous.capturedWhite);
-
-  setCapturedBlack(previous.capturedBlack);
-
-  setStatus(previous.status);
-
-  setCastleRights(previous.castleRights);
-
-  setGameOver(previous.gameOver);
-
-  setHistory((prev) => prev.slice(0, -1));
-
-  setSelected(null);
-
-  setLegalMoves([]);
-
-};
-
-return (
-  <div className="app">
-    <div className="left-panel">
-      <Timer
-    turn={turn}
-    gameOver={gameOver}
-/>
-
-      <Board
-        board={board}
-        selected={selected}
-        legalMoves={legalMoves}
-        onSquareClick={handleSquareClick}
-      />
-    </div>
-
-    <div className="-panel">
-
-
-      {
-message &&
-<div className="error-message">
-    {message}
-</div>
-}
+        {
+          message &&
+          <div className="error-message">
+            {message}
+          </div>
+        }
 
 
 
-      <h2>React Chess</h2>
+        <h2>React Chess</h2>
 
-      <h3>
-        Current Turn :
-        <span className="turn">
-          {" "}
-          {turn.toUpperCase()}
-        </span>
-      </h3>
+        <h3>
+          Current Turn :
+          <span className="turn">
+            {" "}
+            {turn.toUpperCase()}
+          </span>
+        </h3>
 
-      {status !== "" && (
-        <div className="status-box">
-          {status}
+        {status !== "" && (
+          <div className="status-box">
+            {status}
+          </div>
+        )}
+
+        <div className="button-group">
+
+          <button
+            className="reset-btn"
+            onClick={restartGame}
+          >
+            Restart
+          </button>
+
+          <button
+            className="undo-btn"
+            onClick={undoMove}
+            disabled={history.length === 0}
+          >
+            Undo
+          </button>
+
         </div>
-      )}
 
-      <div className="button-group">
+        <hr />
 
-        <button
-          className="reset-btn"
-          onClick={restartGame}
-        >
-          Restart
-        </button>
+        <h3>Captured White Pieces</h3>
 
-        <button
-className="undo-btn"
-onClick={undoMove}
-disabled={history.length === 0}
->
-Undo
-</button>
+        <div className="captured">
+          {capturedWhite.length === 0
+            ? "-"
+            : capturedWhite.join(" ")}
+        </div>
+
+        <h3>Captured Black Pieces</h3>
+
+        <div className="captured">
+          {capturedBlack.length === 0
+            ? "-"
+            : capturedBlack.join(" ")}
+        </div>
+
+        <hr />
+
+        <MoveList
+          moves={moveHistory}
+        />
 
       </div>
-
-      <hr />
-
-      <h3>Captured White Pieces</h3>
-
-      <div className="captured">
-        {capturedWhite.length === 0
-          ? "-"
-          : capturedWhite.join(" ")}
-      </div>
-
-      <h3>Captured Black Pieces</h3>
-
-      <div className="captured">
-        {capturedBlack.length === 0
-          ? "-"
-          : capturedBlack.join(" ")}
-      </div>
-
-      <hr />
-
-      <MoveList
-        moves={moveHistory}
-      />
-
     </div>
-  </div>
-);
+  );
 
 }
 

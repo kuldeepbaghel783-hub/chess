@@ -1,43 +1,56 @@
 import { useEffect, useState } from "react";
 
-function Timer({ turn }) {
+function Timer({ turn, gameOver }) {
   // 5 minutes = 300 seconds
   const [whiteTime, setWhiteTime] = useState(300);
   const [blackTime, setBlackTime] = useState(300);
 
-  useEffect(() => {
+useEffect(() => {
 
+    if (gameOver) return;
 
-      if (gameOver) return;
-    const timer = setInterval(() =>
-      
-          {
+    const timer = setInterval(() => {
 
+        if (turn === "white") {
 
-            
-      if (turn === "white") {
-        setWhiteTime((prev) => {
-          if (prev <= 0) {
-            clearInterval(timer);
-            alert("Black Wins! White ran out of time.");
-            return 0;
-          }
-          return prev - 1;
-        });
-      } else {
-        setBlackTime((prev) => {
-          if (prev <= 0) {
-            clearInterval(timer);
-            alert("White Wins! Black ran out of time.");
-            return 0;
-          }
-          return prev - 1;
-        });
-      }
+            setWhiteTime(prev => {
+
+                if (prev <= 0) {
+
+                    clearInterval(timer);
+
+                    return 0;
+
+                }
+
+                return prev - 1;
+
+            });
+
+        } else {
+
+            setBlackTime(prev => {
+
+                if (prev <= 0) {
+
+                    clearInterval(timer);
+
+                    return 0;
+
+                }
+
+                return prev - 1;
+
+            });
+
+        }
+
     }, 1000);
 
     return () => clearInterval(timer);
-  },[turn, gameOver]);
+
+}, [turn, gameOver]);
+
 
   // Convert seconds to MM:SS format
   const formatTime = (seconds) => {
