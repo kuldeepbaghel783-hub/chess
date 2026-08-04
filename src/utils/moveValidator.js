@@ -1,10 +1,5 @@
 import { isSameColor } from "./helpers";
 
-/*
-==========================================
- Main Validator
-==========================================
-*/
 
 export function validateMove(
     board,
@@ -16,6 +11,9 @@ export function validateMove(
 ) {
   const piece = board[from.row][from.col];
 
+
+
+
   if (!piece) {
     return {
       valid: false,
@@ -24,7 +22,10 @@ export function validateMove(
     };
   }
 
-  // Wrong player's turn
+
+
+
+  
   if (
     turn === "white" &&
     piece !== piece.toUpperCase()
@@ -49,7 +50,6 @@ export function validateMove(
 
   const target = board[to.row][to.col];
 
-  // Can't capture your own piece
   if (
     target !== "" &&
     isSameColor(piece, target)
@@ -116,7 +116,8 @@ export function validateMove(
   }
 }
 
-/* ---------------- Pawn ---------------- */
+
+
 
 function validatePawn(board, from, to, piece, lastMove) {
   const direction =
@@ -125,7 +126,6 @@ function validatePawn(board, from, to, piece, lastMove) {
   const startRow =
     piece === piece.toUpperCase() ? 6 : 1;
 
-  // One square forward
   if (
     from.col === to.col &&
     to.row === from.row + direction &&
@@ -140,7 +140,7 @@ function validatePawn(board, from, to, piece, lastMove) {
     };
   }
 
-  // Two squares forward
+
   if (
     from.row === startRow &&
     from.col === to.col &&
@@ -154,7 +154,7 @@ function validatePawn(board, from, to, piece, lastMove) {
     };
   }
 
-  // Capture
+
   if (
     Math.abs(to.col - from.col) === 1 &&
     to.row === from.row + direction &&
@@ -169,7 +169,7 @@ function validatePawn(board, from, to, piece, lastMove) {
     };
   }
 
-  // En Passant
+ 
   if (
     Math.abs(to.col - from.col) === 1 &&
     to.row === from.row + direction &&
@@ -193,7 +193,7 @@ function validatePawn(board, from, to, piece, lastMove) {
     message: "Illegal pawn move.",
   };
 }
-/* ---------------- Rook ---------------- */
+
 
 function validateRook(board, from, to) {
   if (from.row !== to.row && from.col !== to.col) {
@@ -211,7 +211,9 @@ function validateRook(board, from, to) {
       let c = from.col + step;
       c !== to.col;
       c += step
-    ) {
+    )
+    
+    {
       if (board[from.row][c] !== "") {
         return {
           valid: false,
@@ -246,7 +248,6 @@ function validateRook(board, from, to) {
   };
 }
 
-/* ---------------- Knight ---------------- */
 
 function validateKnight(from, to) {
   const row = Math.abs(from.row - to.row);
@@ -263,7 +264,8 @@ function validateKnight(from, to) {
   };
 }
 
-/* ---------------- Bishop ---------------- */
+
+
 
 function validateBishop(board, from, to) {
   if (
@@ -302,7 +304,6 @@ function validateBishop(board, from, to) {
   };
 }
 
-/* ---------------- Queen ---------------- */
 function validateQueen(board, from, to) {
   const rookMove = validateRook(board, from, to);
 
@@ -323,13 +324,15 @@ function validateQueen(board, from, to) {
   };
 }
 
-/* ---------------- King ---------------- */
+
+
+
 
 function validateKing(board, from, to, castleRights, turn) {
   const rowDiff = Math.abs(from.row - to.row);
   const colDiff = Math.abs(from.col - to.col);
 
-  // Normal King Move
+ 
   if (rowDiff <= 1 && colDiff <= 1) {
     return {
       valid: true,
@@ -337,9 +340,7 @@ function validateKing(board, from, to, castleRights, turn) {
     };
   }
 
-  // -----------------------
-  // White Kingside Castling
-  // -----------------------
+  
   if (
     turn === "white" &&
     from.row === 7 &&
@@ -367,9 +368,7 @@ function validateKing(board, from, to, castleRights, turn) {
     };
   }
 
-  // -----------------------
-  // White Queenside Castling
-  // -----------------------
+
   if (
     turn === "white" &&
     from.row === 7 &&
@@ -398,9 +397,7 @@ function validateKing(board, from, to, castleRights, turn) {
     };
   }
 
-  // -----------------------
-  // Black Kingside Castling
-  // -----------------------
+
   if (
     turn === "black" &&
     from.row === 0 &&
@@ -428,9 +425,7 @@ function validateKing(board, from, to, castleRights, turn) {
     };
   }
 
-  // -----------------------
-  // Black Queenside Castling
-  // -----------------------
+  
   if (
     turn === "black" &&
     from.row === 0 &&

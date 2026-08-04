@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 function Timer({ turn, gameOver, onTimeout }) {
-  // 5 minutes = 300 seconds
+
   const [whiteTime, setWhiteTime] = useState(300);
   const [blackTime, setBlackTime] = useState(300);
 
@@ -56,7 +56,6 @@ useEffect(() => {
 }, [turn, gameOver]);
 
 
-  // Convert seconds to MM:SS format
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;

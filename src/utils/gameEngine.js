@@ -1,186 +1,92 @@
 import { cloneBoard } from "./helpers";
-import {
-  isCheck,
-  isCheckmate,
-  isStalemate,
-} from "./checkLogic";
+import { isCheck, isCheckmate, isStalemate } from "./checkLogic";
 import { getNotation } from "./notation";
 
-export function createMove(
-  board,
-  from,
-  to,
-  moveResult,
-  turn
-) {
-  const newBoard = cloneBoard(board);
+export function createMove(board, from, to, moveResult, turn) {
+  const updatedBoard = cloneBoard(board);
+  const movedPiece = updatedBoard[from.row][from.col];
 
-  const movingPiece =
-    newBoard[from.row][from.col];
-
-  let capturedPiece = newBoard[to.row][to.col];
+  let targetPiece = updatedBoard[to.row][to.col];
 
   if (moveResult.special === "en-passant") {
-
-    capturedPiece =
-      turn === "white"
-        ? "p"
-        : "P";
-
+    targetPiece = turn === "white" ? "p" : "P";
   }
 
-  // Move Piece
-  newBoard[to.row][to.col] = movingPiece;
-  newBoard[from.row][from.col] = "";
+  updatedBoard[to.row][to.col] = movedPiece;
+  updatedBoard[from.row][from.col] = "";
 
-/* -------------------------
-   En Passant
--------------------------- */
-
-if (moveResult.special === "en-passant") {
-
-  if (turn === "white") {
-
-    // Remove captured black pawn
-    newBoard[to.row + 1][to.col] = "";
-
-  } else {
-
-    // Remove captured white pawn
-    newBoard[to.row - 1][to.col] = "";
-
+  if (moveResult.special === "en-passant") {
+    if (turn === "white") {
+      updatedBoard[to.row + 1][to.col] = "";
+    } else {
+      updatedBoard[to.row - 1][to.col] = "";
+    }
   }
 
-}
-
-
-/* -------------------------
-   Kingside Castling
--------------------------- */
-
-if (moveResult.special === "castle-king") {
-
-  // White
-  if (turn === "white") {
-
-    newBoard[7][5] = newBoard[7][7];
-    newBoard[7][7] = "";
-
+  if (moveResult.special === "castle-king") {
+    if (turn === "white") {
+      updatedBoard[7][5] = updatedBoard[7][7];
+      updatedBoard[7][7] = "";
+    } else {
+      updatedBoard[0][5] = updatedBoard[0][7];
+      updatedBoard[0][7] = "";
+    }
   }
 
-  // Black
-  else {
-
-    newBoard[0][5] = newBoard[0][7];
-    newBoard[0][7] = "";
-
+  if (moveResult.special === "castle-queen") {
+    if (turn === "white") {
+      updatedBoard[7][3] = updatedBoard[7][0];
+      updatedBoard[7][0] = "";
+    } else {
+      updatedBoard[0][3] = updatedBoard[0][0];
+      updatedBoard[0][0] = "";
+    }
   }
 
-}
-
-/* -------------------------
-   Queenside Castling
--------------------------- */
-
-if (moveResult.special === "castle-queen") {
-
-  // White
-  if (turn === "white") {
-
-    newBoard[7][3] = newBoard[7][0];
-    newBoard[7][0] = "";
-
+  if (moveResult.special === "promotion") {
+    updatedBoard[to.row][to.col] = turn === "white" ? "Q" : "q";
   }
 
-  // Black
-  else {
+  const opponentTurn = turn === "white" ? "black" : "white";
 
-    newBoard[0][3] = newBoard[0][0];
-    newBoard[0][0] = "";
+  const check = isCheck(updatedBoard, opponentTurn);
+  const mate = isCheckmate(updatedBoard, opponentTurn);
 
-  }
-
-}
-
-
-  // Pawn Promotion
-  if (
-    moveResult.special === "promotion"
-  ) {
-    newBoard[to.row][to.col] =
-      turn === "white" ? "Q" : "q";
-  }
-
-  // Move Notation
-const opponent =
-  turn === "white"
-    ? "black"
-    : "white";
-
-const check = isCheck(
-  newBoard,
-  opponent
-);
-
-const mate = isCheckmate(
-  newBoard,
-  opponent
-);
-
-const notation = getNotation(
-  movingPiece,
-  from,
-  to,
-  capturedPiece !== "" && capturedPiece !== null,
-  check,
-  mate,
-  moveResult.special
-);
+  const moveNotation = getNotation(
+    movedPiece,
+    from,
+    to,
+    targetPiece !== "" && targetPiece !== null,
+    check,
+    mate,
+    moveResult.special
+  );
 
   return {
-    board: newBoard,
-
-    notation,
-
-    capturedPiece,
-
-    nextTurn:
-      turn === "white"
-        ? "black"
-        : "white",
+    board: updatedBoard,
+    notation: moveNotation,
+    capturedPiece: targetPiece,
+    nextTurn: opponentTurn,
   };
 }
 
-
-export function getGameStatus(
-  board,
-  turn
-) {
-  if (
-    isCheckmate(board, turn)
-  ) {
+export function getGameStatus(board, turn) {
+  if (isCheckmate(board, turn)) {
+    const winner = turn === "white" ? "Black" : "White";
     return {
       gameOver: true,
-      message: `Checkmate! ${
-        turn === "white"
-          ? "Black"
-          : "White"
-      } Wins`,
+      message: `Checkmate! ${winner} Wins`,
     };
   }
 
-  if (
-    isStalemate(board, turn)
-  ) {
+  if (isStalemate(board, turn)) {
     return {
       gameOver: true,
       message: "Stalemate",
     };
   }
 
-  if (
-    isCheck(board, turn)
-  ) {
+  if (isCheck(board, turn)) {
     return {
       gameOver: false,
       message: "Check!",
@@ -193,22 +99,11 @@ export function getGameStatus(
   };
 }
 
-export function switchTurn(
-  turn
-) {
-  return turn === "white"
-    ? "black"
-    : "white";
+export function switchTurn(turn) {
+  return turn === "white" ? "black" : "white";
 }
 
-export function addCapturedPiece(
-  captured,
-  piece
-) {
+export function addCapturedPiece(captured, piece) {
   if (!piece) return captured;
-
-  return [
-    ...captured,
-    piece,
-  ];
+  return [...captured, piece];
 }

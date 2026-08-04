@@ -18,15 +18,14 @@ function Square({
       }`}
       onClick={onClick}
     >
-      {/* Chess Piece */}
+  
       {piece && <Piece piece={piece} />}
 
-      {/* Legal Move Indicator */}
       {!piece && legal && (
         <div className="legal-dot"></div>
       )}
 
-      {/* Capture Indicator */}
+     
       {piece && legal && (
         <div className="capture-ring"></div>
       )}

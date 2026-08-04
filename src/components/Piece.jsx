@@ -1,6 +1,6 @@
 function Piece({ piece }) {
   const pieces = {
-    // White
+    
     K: "♔",
     Q: "♕",
     R: "♖",
@@ -8,7 +8,7 @@ function Piece({ piece }) {
     N: "♘",
     P: "♙",
 
-    // Black
+    
     k: "♚",
     q: "♛",
     r: "♜",

@@ -1,17 +1,16 @@
-const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
+const fileNames = ["a", "b", "c", "d", "e", "f", "g", "h"];
 
 function getFile(col) {
-  return files[col];
+  return fileNames[col];
 }
 
-const pieceNames = {
+const pieceLetters = {
   K: "K",
   Q: "Q",
   R: "R",
   B: "B",
   N: "N",
   P: "",
-
   k: "K",
   q: "Q",
   r: "R",
@@ -30,8 +29,6 @@ export function getNotation(
   special = null,
   disambiguation = ""
 ) {
-
-  // Castling
   if (special === "castle-king") {
     return "O-O";
   }
@@ -40,35 +37,29 @@ export function getNotation(
     return "O-O-O";
   }
 
-  let notation = "";
+  let formattedNotation = "";
 
-  notation += pieceNames[piece];
+  formattedNotation += pieceLetters[piece];
 
   if (disambiguation) {
-    notation += disambiguation;
+    formattedNotation += disambiguation;
   }
 
   if (capture) {
-
     if (piece.toLowerCase() === "p") {
-
-      notation += getFile(from.col);
-
+      formattedNotation += getFile(from.col);
     }
-
-    notation += "x";
-
+    formattedNotation += "x";
   }
 
-  notation += getFile(to.col);
-  notation += 8 - to.row;
+  formattedNotation += getFile(to.col);
+  formattedNotation += 8 - to.row;
 
   if (checkmate) {
-    notation += "#";
-  }
-  else if (check) {
-    notation += "+";
+    formattedNotation += "#";
+  } else if (check) {
+    formattedNotation += "+";
   }
 
-  return notation;
+  return formattedNotation;
 }

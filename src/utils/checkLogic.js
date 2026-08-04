@@ -1,50 +1,25 @@
 import { validateMove } from "./moveValidator";
-import {
-  cloneBoard,
-  findKing,
-  getAllPieces,
-  makeMove,
-} from "./helpers";
+import { findKing, getAllPieces, makeMove } from "./helpers";
 
-/*
----------------------------------------
-Check if a square is attacked
----------------------------------------
-*/
 
-export function isSquareUnderAttack(
-  board,
-  row,
-  col,
-  attackerColor
-) {
-  const pieces = getAllPieces(board, attackerColor);
 
-  for (const current of pieces) {
-    const from = {
-      row: current.row,
-      col: current.col,
-    };
+export function isSquareUnderAttack  (board, row, col, attackerColor) { 
 
-    const to = {
-      row,
-      col,
-    };
+  const pieces = getAllPieces (board, attackerColor);
 
-    const result = validateMove(
-      board,
-      from,
-      to,
-      attackerColor,
-      {
-        whiteKingMoved: false,
-        blackKingMoved: false,
-        whiteLeftRookMoved: false,
-        whiteRightRookMoved: false,
-        blackLeftRookMoved: false,
-        blackRightRookMoved: false,
-      }
-    );
+  for  (let i = 0; i < pieces.length; i++) {
+    const currentPiece = pieces[i];
+    const from = { row: currentPiece.row, col: currentPiece.col };
+    const to = { row, col };
+
+    const result = validateMove(board, from, to, attackerColor, {
+      whiteKingMoved: false,
+      blackKingMoved: false,
+      whiteLeftRookMoved: false,
+      whiteRightRookMoved: false,
+      blackLeftRookMoved: false,
+      blackRightRookMoved: false,
+    });
 
     if (result.valid) {
       return true;
@@ -53,10 +28,13 @@ export function isSquareUnderAttack(
 
   return false;
 }
-export function canCastle(board, turn, side, castleRights) {
-  const row = turn === "white" ? 7 : 0;
 
-  // King cannot have moved
+export function canCastle(board, turn, side, castleRights)
+
+{
+  const row = turn === "white" ? 7 : 0;
+  const opponentColor = turn === "white" ? "black" : "white";
+
   if (
     (turn === "white" && castleRights.whiteKingMoved) ||
     (turn === "black" && castleRights.blackKingMoved)
@@ -64,131 +42,73 @@ export function canCastle(board, turn, side, castleRights) {
     return false;
   }
 
-  // King cannot currently be in check
   if (isCheck(board, turn)) {
     return false;
   }
 
-  // Kingside
   if (side === "king") {
     if (
-      isSquareUnderAttack(board, row, 5, turn === "white" ? "black" : "white") ||
-      isSquareUnderAttack(board, row, 6, turn === "white" ? "black" : "white")
+      isSquareUnderAttack(board, row, 5, opponentColor) ||
+      isSquareUnderAttack(board, row, 6, opponentColor)
     ) {
       return false;
     }
-
     return true;
   }
 
-  // Queenside
   if (side === "queen") {
     if (
-      isSquareUnderAttack(board, row, 3, turn === "white" ? "black" : "white") ||
-      isSquareUnderAttack(board, row, 2, turn === "white" ? "black" : "white")
+      isSquareUnderAttack(board, row, 3, opponentColor) ||
+      isSquareUnderAttack(board, row, 2, opponentColor)
     ) {
       return false;
     }
-
     return true;
   }
 
   return false;
 }
-/*
----------------------------------------
-Is King in Check
----------------------------------------
-*/
 
 export function isCheck(board, turn) {
-  const king = findKing(board, turn);
+  const kingLocation = findKing(board, turn);
 
-  if (!king) return false;
+  if (!kingLocation) {
+    return false;
+  }
 
-  const opponent =
-    turn === "white"
-      ? "black"
-      : "white";
-
-  return isSquareUnderAttack(
-    board,
-    king.row,
-    king.col,
-    opponent
-  );
+  const opponent = turn === "white" ? "black" : "white";
+  return isSquareUnderAttack(board, kingLocation.row, kingLocation.col, opponent);
 }
 
-/*
----------------------------------------
-Try a move safely
----------------------------------------
-*/
-
-export function simulateMove(
-  board,
-  from,
-  to
-) {
+export function simulateMove(board, from, to) {
   return makeMove(board, from, to);
 }
 
-/*
----------------------------------------
-Would this move leave king in check?
----------------------------------------
-*/
-
-export function causesSelfCheck(
-  board,
-  from,
-  to,
-  turn
-) {
-  const tempBoard = simulateMove(
-    board,
-    from,
-    to
-  );
-
-  return isCheck(
-    tempBoard,
-    turn
-  );
-}/*
----------------------------------------
-Get All Legal Moves for a Piece
----------------------------------------
-*/
+export function causesSelfCheck(board, from, to, turn) {
+  const temporaryBoard = simulateMove(board, from, to);
+  return isCheck(temporaryBoard, turn);
+}
 
 export function getLegalMoves(board, from, turn) {
   const legalMoves = [];
 
-  for (let row = 0; row < 8; row++) {
-    for (let col = 0; col < 8; col++) {
-      const to = { row, col };
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const to = { row: r, col: c };
 
-      // Check normal movement rules
-      const result = validateMove(
-        board,
-        from,
-        to,
-        turn,
-        {
-          whiteKingMoved: false,
-          blackKingMoved: false,
-          whiteLeftRookMoved: false,
-          whiteRightRookMoved: false,
-          blackLeftRookMoved: false,
-          blackRightRookMoved: false,
-        }
-      );
+      const result = validateMove(board, from, to, turn, {
+        whiteKingMoved: false,
+        blackKingMoved: false,
+        whiteLeftRookMoved: false,
+        whiteRightRookMoved: false,
+        blackLeftRookMoved: false,
+        blackRightRookMoved: false,
+      });
 
       if (!result.valid) {
         continue;
       }
 
-      // Prevent moves that leave own king in check
       if (causesSelfCheck(board, from, to, turn)) {
         continue;
       }
@@ -200,21 +120,12 @@ export function getLegalMoves(board, from, turn) {
   return legalMoves;
 }
 
-/*
----------------------------------------
-Does Player Have Any Legal Move?
----------------------------------------
-*/
-
 export function hasAnyLegalMove(board, turn) {
   const pieces = getAllPieces(board, turn);
 
-  for (const piece of pieces) {
-    const from = {
-      row: piece.row,
-      col: piece.col,
-    };
-
+  for (let i = 0; i < pieces.length; i++) {
+    const p = pieces[i];
+    const from = { row: p.row, col: p.col };
     const moves = getLegalMoves(board, from, turn);
 
     if (moves.length > 0) {
@@ -225,12 +136,6 @@ export function hasAnyLegalMove(board, turn) {
   return false;
 }
 
-/*
----------------------------------------
-Checkmate Detection
----------------------------------------
-*/
-
 export function isCheckmate(board, turn) {
   if (!isCheck(board, turn)) {
     return false;
@@ -238,12 +143,6 @@ export function isCheckmate(board, turn) {
 
   return !hasAnyLegalMove(board, turn);
 }
-
-/*
----------------------------------------
-Stalemate Detection
----------------------------------------
-*/
 
 export function isStalemate(board, turn) {
   if (isCheck(board, turn)) {

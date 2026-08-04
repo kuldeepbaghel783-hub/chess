@@ -23,4 +23,4 @@ export const PIECES = {
   },
 };
 
-export const BOARD_SIZE = 8;
+export const BOARD_SIZE = 8;  

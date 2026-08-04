@@ -12,7 +12,11 @@ function Board({
     );
   };
 
+
+
+
   return (
+
     <div className="board">
       {board.map((row, rowIndex) =>
         row.map((piece, colIndex) => (
@@ -31,8 +35,12 @@ function Board({
               onSquareClick(rowIndex, colIndex)
             }
           />
+
+
         ))
       )}
+
+      
     </div>
   );
 }
