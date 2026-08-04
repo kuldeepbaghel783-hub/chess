@@ -6,7 +6,13 @@ import { isSameColor } from "./helpers";
 ==========================================
 */
 
-export function validateMove(board, from, to, turn) {
+export function validateMove(
+    board,
+    from,
+    to,
+    turn,
+    castleRights
+) {
   const piece = board[from.row][from.col];
 
   if (!piece) {
@@ -86,12 +92,7 @@ export function validateMove(board, from, to, turn) {
         to
       );
 
-    case "k":
-      return validateKing(
-        board,
-        from,
-        to
-      );
+ 
 
     default:
       return {
@@ -273,28 +274,145 @@ function validateQueen(board, from, to) {
 
 /* ---------------- King ---------------- */
 
-function validateKing(board, from, to) {
-  const row = Math.abs(from.row - to.row);
-  const col = Math.abs(from.col - to.col);
+function validateKing(board, from, to, castleRights, turn) {
+  const rowDiff = Math.abs(from.row - to.row);
+  const colDiff = Math.abs(from.col - to.col);
 
-  // Normal king move
-  if (row <= 1 && col <= 1) {
+  // Normal King Move
+  if (rowDiff <= 1 && colDiff <= 1) {
     return {
       valid: true,
       special: null,
     };
   }
 
-  // Kingside castling
-  if (row === 0 && col === 2) {
-    return {
-      valid: true,
-      special: "castle",
-    };
+  // -----------------------
+  // White Kingside Castling
+  // -----------------------
+  if (
+    turn === "white" &&
+    from.row === 7 &&
+    from.col === 4 &&
+    to.row === 7 &&
+    to.col === 6
+  ) {
+    if (
+      !castleRights.whiteKingMoved &&
+      !castleRights.whiteRightRookMoved &&
+      board[7][5] === "" &&
+      board[7][6] === ""
+    ) {
+      return {
+        valid: true,
+        special: "castle-king",
+      };
+    }
+  }
+
+  // -----------------------
+  // White Queenside Castling
+  // -----------------------
+  if (
+    turn === "white" &&
+    from.row === 7 &&
+    from.col === 4 &&
+    to.row === 7 &&
+    to.col === 2
+  ) {
+    if (
+      !castleRights.whiteKingMoved &&
+      !castleRights.whiteLeftRookMoved &&
+      board[7][1] === "" &&
+      board[7][2] === "" &&
+      board[7][3] === ""
+    ) {
+      return {
+        valid: true,
+        special: "castle-queen",
+      };
+    }
+  }
+
+  // -----------------------
+  // Black Kingside Castling
+  // -----------------------
+  if (
+    turn === "black" &&
+    from.row === 0 &&
+    from.col === 4 &&
+    to.row === 0 &&
+    to.col === 6
+  ) {
+    if (
+      !castleRights.blackKingMoved &&
+      !castleRights.blackRightRookMoved &&
+      board[0][5] === "" &&
+      board[0][6] === ""
+    ) {
+      return {
+        valid: true,
+        special: "castle-king",
+      };
+    }
+  }
+
+  // -----------------------
+  // Black Queenside Castling
+  // -----------------------
+  if (
+    turn === "black" &&
+    from.row === 0 &&
+    from.col === 4 &&
+    to.row === 0 &&
+    to.col === 2
+  ) {
+    if (
+      !castleRights.blackKingMoved &&
+      !castleRights.blackLeftRookMoved &&
+      board[0][1] === "" &&
+      board[0][2] === "" &&
+      board[0][3] === ""
+    ) {
+      return {
+        valid: true,
+        special: "castle-queen",
+      };
+    }
   }
 
   return {
     valid: false,
     special: null,
+  };
+}
+
+
+export function validateCompleteMove(
+  board,
+  from,
+  to,
+  turn,
+  castleRights
+) {
+  const result = validateMove(
+    board,
+    from,
+    to,
+    turn,
+    castleRights
+  );
+
+  if (!result.valid) {
+    return {
+      valid: false,
+      message: "Illegal Move!",
+      special: null,
+    };
+  }
+
+  return {
+    valid: true,
+    message: "",
+    special: result.special,
   };
 }

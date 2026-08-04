@@ -45,7 +45,48 @@ export function isSquareUnderAttack(
 
   return false;
 }
+export function canCastle(board, turn, side, castleRights) {
+  const row = turn === "white" ? 7 : 0;
 
+  // King cannot have moved
+  if (
+    (turn === "white" && castleRights.whiteKingMoved) ||
+    (turn === "black" && castleRights.blackKingMoved)
+  ) {
+    return false;
+  }
+
+  // King cannot currently be in check
+  if (isCheck(board, turn)) {
+    return false;
+  }
+
+  // Kingside
+  if (side === "king") {
+    if (
+      isSquareUnderAttack(board, row, 5, turn === "white" ? "black" : "white") ||
+      isSquareUnderAttack(board, row, 6, turn === "white" ? "black" : "white")
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  // Queenside
+  if (side === "queen") {
+    if (
+      isSquareUnderAttack(board, row, 3, turn === "white" ? "black" : "white") ||
+      isSquareUnderAttack(board, row, 2, turn === "white" ? "black" : "white")
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  return false;
+}
 /*
 ---------------------------------------
 Is King in Check

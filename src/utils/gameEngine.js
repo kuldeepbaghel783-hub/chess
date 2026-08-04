@@ -25,6 +25,56 @@ export function createMove(
   newBoard[to.row][to.col] = movingPiece;
   newBoard[from.row][from.col] = "";
 
+
+/* -------------------------
+   Kingside Castling
+-------------------------- */
+
+if (moveResult.special === "castle-king") {
+
+  // White
+  if (turn === "white") {
+
+    newBoard[7][5] = newBoard[7][7];
+    newBoard[7][7] = "";
+
+  }
+
+  // Black
+  else {
+
+    newBoard[0][5] = newBoard[0][7];
+    newBoard[0][7] = "";
+
+  }
+
+}
+
+/* -------------------------
+   Queenside Castling
+-------------------------- */
+
+if (moveResult.special === "castle-queen") {
+
+  // White
+  if (turn === "white") {
+
+    newBoard[7][3] = newBoard[7][0];
+    newBoard[7][0] = "";
+
+  }
+
+  // Black
+  else {
+
+    newBoard[0][3] = newBoard[0][0];
+    newBoard[0][0] = "";
+
+  }
+
+}
+
+
   // Pawn Promotion
   if (
     moveResult.special === "promotion"
@@ -34,12 +84,30 @@ export function createMove(
   }
 
   // Move Notation
-  const notation = getNotation(
-    movingPiece,
-    from,
-    to,
-    capturedPiece !== ""
-  );
+const opponent =
+  turn === "white"
+    ? "black"
+    : "white";
+
+const check = isCheck(
+  newBoard,
+  opponent
+);
+
+const mate = isCheckmate(
+  newBoard,
+  opponent
+);
+
+const notation = getNotation(
+  movingPiece,
+  from,
+  to,
+  capturedPiece !== "",
+  check,
+  mate,
+  moveResult.special
+);
 
   return {
     board: newBoard,

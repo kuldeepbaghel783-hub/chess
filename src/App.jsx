@@ -1,8 +1,10 @@
 
 import { useState } from "react";
-
+import {
+  validateCompleteMove,
+} from "./utils/moveValidator";
 import "./App.css";
-
+import { canCastle } from "./utils/checkLogic";
 import Board from "./components/Board";
 import Timer from "./components/Timer";
 import MoveList from "./components/MoveList";
@@ -24,7 +26,7 @@ function App() {
   const [turn, setTurn] = useState("white");
 
   const [selected, setSelected] = useState(null);
-
+const [gameOver, setGameOver] = useState(false);
   const [legalMoves, setLegalMoves] = useState([]);
 
   const [moveHistory, setMoveHistory] = useState([]);
@@ -85,12 +87,13 @@ function App() {
       col,
     };
 
-    const result = validateMove(
-      board,
-      from,
-      to,
-      turn
-    );
+   const result = validateCompleteMove(
+  board,
+  from,
+  to,
+  turn,
+  castleRights
+);
 
     if (!result.valid) {
 
@@ -116,9 +119,18 @@ function App() {
 }
         // Save board for Undo
     setHistory((prev) => [
-      ...prev,
-      board.map((row) => [...row]),
-    ]);
+  ...prev,
+  {
+    board: board.map((row) => [...row]),
+    turn,
+    moveHistory: [...moveHistory],
+    capturedWhite: [...capturedWhite],
+    capturedBlack: [...capturedBlack],
+    status,
+    castleRights: { ...castleRights },
+    gameOver,
+  },
+]);
 
     // Execute move using Game Engine
     const move = createMove(
@@ -137,6 +149,69 @@ function App() {
       ...prev,
       move.notation,
     ]);
+
+
+// Update Castling Rights
+
+if (movingPiece === "K") {
+  setCastleRights(prev => ({
+    ...prev,
+    whiteKingMoved: true
+  }));
+}
+
+if (movingPiece === "k") {
+  setCastleRights(prev => ({
+    ...prev,
+    blackKingMoved: true
+  }));
+}
+
+if (movingPiece === "R") {
+
+  if (from.row === 7 && from.col === 0) {
+
+    setCastleRights(prev => ({
+      ...prev,
+      whiteLeftRookMoved: true
+    }));
+
+  }
+
+  if (from.row === 7 && from.col === 7) {
+
+    setCastleRights(prev => ({
+      ...prev,
+      whiteRightRookMoved: true
+    }));
+
+  }
+
+}
+
+if (movingPiece === "r") {
+
+  if (from.row === 0 && from.col === 0) {
+
+    setCastleRights(prev => ({
+      ...prev,
+      blackLeftRookMoved: true
+    }));
+
+  }
+
+  if (from.row === 0 && from.col === 7) {
+
+    setCastleRights(prev => ({
+      ...prev,
+      blackRightRookMoved: true
+    }));
+
+  }
+
+}
+
+
 
     // Save captured piece
     if (move.capturedPiece !== "") {
@@ -166,47 +241,58 @@ function App() {
     setTurn(nextTurn);
 
     // Check game status
-    const gameStatus =
-      getGameStatus(
-        move.board,
-        nextTurn
-      );
+   const gameStatus = getGameStatus(
+    move.board,
+    nextTurn
+);
 
-    setStatus(gameStatus.message);
+setStatus(gameStatus.message);
 
-    // Clear selection
-    setSelected(null);
-
-    setLegalMoves([]);
+if (gameStatus.gameOver) {
+    setGameOver(true);
+}
   };
 
  
 
 
-const restartGame = () => {
-  setBoard(initialBoard);
+const undoMove = () => {
 
-  setTurn("white");
+  if (history.length === 0) return;
+
+  const previous = history[history.length - 1];
+
+  setBoard(previous.board);
+
+  setTurn(previous.turn);
+
+  setMoveHistory(previous.moveHistory);
+
+  setCapturedWhite(previous.capturedWhite);
+
+  setCapturedBlack(previous.capturedBlack);
+
+  setStatus(previous.status);
+
+  setCastleRights(previous.castleRights);
+
+  setGameOver(previous.gameOver);
+
+  setHistory((prev) => prev.slice(0, -1));
 
   setSelected(null);
 
   setLegalMoves([]);
 
-  setMoveHistory([]);
-
-  setCapturedWhite([]);
-
-  setCapturedBlack([]);
-
-  setStatus("");
-
-  setHistory([]);
 };
 
 return (
   <div className="app">
     <div className="left-panel">
-      <Timer turn={turn} />
+      <Timer
+    turn={turn}
+    gameOver={gameOver}
+/>
 
       <Board
         board={board}
@@ -254,10 +340,11 @@ message &&
         </button>
 
         <button
-  className="undo-btn"
-  disabled
+className="undo-btn"
+onClick={undoMove}
+disabled={history.length === 0}
 >
-  Undo
+Undo
 </button>
 
       </div>

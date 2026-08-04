@@ -6,7 +6,15 @@ function Timer({ turn }) {
   const [blackTime, setBlackTime] = useState(300);
 
   useEffect(() => {
-    const timer = setInterval(() => {
+
+
+      if (gameOver) return;
+    const timer = setInterval(() =>
+      
+          {
+
+
+            
       if (turn === "white") {
         setWhiteTime((prev) => {
           if (prev <= 0) {
@@ -29,7 +37,7 @@ function Timer({ turn }) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [turn]);
+  },[turn, gameOver]);
 
   // Convert seconds to MM:SS format
   const formatTime = (seconds) => {
