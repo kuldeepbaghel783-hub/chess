@@ -3,10 +3,6 @@ const files = ["a", "b", "c", "d", "e", "f", "g", "h"
 
 ];
 
-function getFile(col){
-    return files[col];
-}
-
 const pieceNames = {
   K: "K",
   Q: "Q",
@@ -47,27 +43,21 @@ export function getNotation(
 
   notation += pieceNames[piece];
 
-  if(disambiguation){
+  if (disambiguation) {
     notation += disambiguation;
-}
+  }
 
-  notation += disambiguation;
+  if (capture) {
 
-  if (
-  capture &&
-  piece.toLowerCase() === "p"
-) {
+    if (piece.toLowerCase() === "p") {
 
-  notation += files[from.col];
+      notation += files[from.col];
 
-  notation += "x";
+    }
 
-}
-else if(capture){
+    notation += "x";
 
-  notation += "x";
-
-}
+  }
 
   notation += files[to.col];
   notation += 8 - to.row;

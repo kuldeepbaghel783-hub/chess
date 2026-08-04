@@ -23,7 +23,9 @@ function App() {
   const [board, setBoard] = useState(initialBoard);
 
   const [turn, setTurn] = useState("white");
-const [gameOver, setGameOver] = useState(false);
+
+  const [gameOver, setGameOver] = useState(false);
+
   const [selected, setSelected] = useState(null);
 
   const [legalMoves, setLegalMoves] = useState([]);
@@ -40,6 +42,8 @@ const [gameOver, setGameOver] = useState(false);
 
   const [history, setHistory] = useState([]);
 
+  const [lastMove, setLastMove] = useState(null);
+
  
 
   const [castleRights, setCastleRights] = useState({
@@ -54,6 +58,10 @@ const [gameOver, setGameOver] = useState(false);
   });
 
   const handleSquareClick = (row, col) => {
+    if (gameOver) {
+      return;
+    }
+
     const clickedPiece = board[row][col];
 
     // Select Piece
@@ -104,7 +112,8 @@ const [gameOver, setGameOver] = useState(false);
       from,
       to,
       turn,
-      castleRights
+      castleRights,
+      lastMove
     );
 
     if (!result.valid) {
@@ -161,6 +170,12 @@ const [gameOver, setGameOver] = useState(false);
 
     // Update board
     setBoard(move.board);
+
+    setLastMove({
+      piece: board[from.row][from.col],
+      from,
+      to
+    });
 
     // Save move history
     setMoveHistory((prev) => [
@@ -323,6 +338,8 @@ const [gameOver, setGameOver] = useState(false);
 
     setHistory([]);
 
+    setLastMove(null);
+
     setGameOver(false);
 
     setCastleRights({
@@ -336,12 +353,29 @@ const [gameOver, setGameOver] = useState(false);
 
   };
 
+  const handleTimeout = (player) => {
+
+    setGameOver(true);
+
+    if (player === "white") {
+
+      setStatus("Black Wins by Time!");
+
+    } else {
+
+      setStatus("White Wins by Time!");
+
+    }
+
+  };
+
   return (
     <div className="app">
       <div className="left-panel">
         <Timer
           turn={turn}
           gameOver={gameOver}
+          onTimeout={handleTimeout}
         />
 
         <Board

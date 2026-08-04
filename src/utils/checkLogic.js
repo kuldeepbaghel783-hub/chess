@@ -31,14 +31,22 @@ export function isSquareUnderAttack(
       col,
     };
 
-    if (
-      validateMove(
-        board,
-        from,
-        to,
-        attackerColor
-      )
-    ) {
+    const result = validateMove(
+      board,
+      from,
+      to,
+      attackerColor,
+      {
+        whiteKingMoved: false,
+        blackKingMoved: false,
+        whiteLeftRookMoved: false,
+        whiteRightRookMoved: false,
+        blackLeftRookMoved: false,
+        blackRightRookMoved: false,
+      }
+    );
+
+    if (result.valid) {
       return true;
     }
   }
@@ -161,7 +169,22 @@ export function getLegalMoves(board, from, turn) {
       const to = { row, col };
 
       // Check normal movement rules
-      if (!validateMove(board, from, to, turn)) {
+      const result = validateMove(
+        board,
+        from,
+        to,
+        turn,
+        {
+          whiteKingMoved: false,
+          blackKingMoved: false,
+          whiteLeftRookMoved: false,
+          whiteRightRookMoved: false,
+          blackLeftRookMoved: false,
+          blackRightRookMoved: false,
+        }
+      );
+
+      if (!result.valid) {
         continue;
       }
 

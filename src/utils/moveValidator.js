@@ -92,7 +92,14 @@ export function validateMove(
         to
       );
 
- 
+    case "k":
+      return validateKing(
+        board,
+        from,
+        to,
+        castleRights,
+        turn
+      );
 
     default:
       return {
@@ -299,6 +306,7 @@ function validateKing(board, from, to, castleRights, turn) {
     if (
       !castleRights.whiteKingMoved &&
       !castleRights.whiteRightRookMoved &&
+      board[7][7] === "R" &&
       board[7][5] === "" &&
       board[7][6] === ""
     ) {
@@ -322,6 +330,7 @@ function validateKing(board, from, to, castleRights, turn) {
     if (
       !castleRights.whiteKingMoved &&
       !castleRights.whiteLeftRookMoved &&
+      board[7][0] === "R" &&
       board[7][1] === "" &&
       board[7][2] === "" &&
       board[7][3] === ""
@@ -346,6 +355,7 @@ function validateKing(board, from, to, castleRights, turn) {
     if (
       !castleRights.blackKingMoved &&
       !castleRights.blackRightRookMoved &&
+      board[0][7] === "r" &&
       board[0][5] === "" &&
       board[0][6] === ""
     ) {
@@ -369,6 +379,7 @@ function validateKing(board, from, to, castleRights, turn) {
     if (
       !castleRights.blackKingMoved &&
       !castleRights.blackLeftRookMoved &&
+      board[0][0] === "r" &&
       board[0][1] === "" &&
       board[0][2] === "" &&
       board[0][3] === ""

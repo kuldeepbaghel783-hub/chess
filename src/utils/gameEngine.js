@@ -18,12 +18,40 @@ export function createMove(
   const movingPiece =
     newBoard[from.row][from.col];
 
-  const capturedPiece =
-    newBoard[to.row][to.col];
+  let capturedPiece = newBoard[to.row][to.col];
+
+  if (moveResult.special === "en-passant") {
+
+    capturedPiece =
+      turn === "white"
+        ? "p"
+        : "P";
+
+  }
 
   // Move Piece
   newBoard[to.row][to.col] = movingPiece;
   newBoard[from.row][from.col] = "";
+
+/* -------------------------
+   En Passant
+-------------------------- */
+
+if (moveResult.special === "en-passant") {
+
+  if (turn === "white") {
+
+    // Remove captured black pawn
+    newBoard[to.row + 1][to.col] = "";
+
+  } else {
+
+    // Remove captured white pawn
+    newBoard[to.row - 1][to.col] = "";
+
+  }
+
+}
 
 
 /* -------------------------
@@ -103,7 +131,7 @@ const notation = getNotation(
   movingPiece,
   from,
   to,
-  capturedPiece !== "",
+  capturedPiece !== "" && capturedPiece !== null,
   check,
   mate,
   moveResult.special

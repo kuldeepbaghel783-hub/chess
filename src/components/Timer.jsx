@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-function Timer({ turn, gameOver }) {
+function Timer({ turn, gameOver, onTimeout }) {
   // 5 minutes = 300 seconds
   const [whiteTime, setWhiteTime] = useState(300);
   const [blackTime, setBlackTime] = useState(300);
@@ -19,6 +19,8 @@ useEffect(() => {
 
                     clearInterval(timer);
 
+                    onTimeout("white");
+
                     return 0;
 
                 }
@@ -34,6 +36,8 @@ useEffect(() => {
                 if (prev <= 0) {
 
                     clearInterval(timer);
+
+                    onTimeout("black");
 
                     return 0;
 
