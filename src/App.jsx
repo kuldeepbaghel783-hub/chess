@@ -108,24 +108,17 @@ function App() {
     };
 
     const result = validateCompleteMove(
-      board,
-      from,
-      to,
-      turn,
-      castleRights,
-      lastMove
-    );
+    board,
+    from,
+    to,
+    turn,
+    castleRights,
+    lastMove
+);
 
     if (!result.valid) {
 
-
-
-
-
-      setMessage("Illegal Move!");
-
-
-
+      setMessage(result.message || "Illegal Move!");
 
       setTimeout(() => {
         setMessage("");
@@ -138,8 +131,45 @@ function App() {
       return;
     }
 
+    if (result.special === "castle-king") {
 
+      if (!canCastle(board, turn, "king", castleRights)) {
 
+        setMessage("Cannot castle through check.");
+
+        setTimeout(() => {
+          setMessage("");
+        }, 2000);
+
+        setSelected(null);
+
+        setLegalMoves([]);
+
+        return;
+
+      }
+
+    }
+
+    if (result.special === "castle-queen") {
+
+      if (!canCastle(board, turn, "queen", castleRights)) {
+
+        setMessage("Cannot castle through check.");
+
+        setTimeout(() => {
+          setMessage("");
+        }, 2000);
+
+        setSelected(null);
+
+        setLegalMoves([]);
+
+        return;
+
+      }
+
+    }
 
     // Save board for Undo
     setHistory((prev) => [

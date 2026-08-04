@@ -1,7 +1,8 @@
-const files = ["a", "b", "c", "d", "e", "f", "g", "h"
+const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
 
-
-];
+function getFile(col) {
+  return files[col];
+}
 
 const pieceNames = {
   K: "K",
@@ -51,7 +52,7 @@ export function getNotation(
 
     if (piece.toLowerCase() === "p") {
 
-      notation += files[from.col];
+      notation += getFile(from.col);
 
     }
 
@@ -59,7 +60,7 @@ export function getNotation(
 
   }
 
-  notation += files[to.col];
+  notation += getFile(to.col);
   notation += 8 - to.row;
 
   if (checkmate) {

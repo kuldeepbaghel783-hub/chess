@@ -11,7 +11,8 @@ export function validateMove(
     from,
     to,
     turn,
-    castleRights
+    castleRights,
+    lastMove
 ) {
   const piece = board[from.row][from.col];
 
@@ -19,6 +20,7 @@ export function validateMove(
     return {
       valid: false,
       special: null,
+      message: "No piece on that square.",
     };
   }
 
@@ -30,6 +32,7 @@ export function validateMove(
     return {
       valid: false,
       special: null,
+      message: "It's white's turn to move.",
     };
   }
 
@@ -40,6 +43,7 @@ export function validateMove(
     return {
       valid: false,
       special: null,
+      message: "It's black's turn to move.",
     };
   }
 
@@ -53,6 +57,7 @@ export function validateMove(
     return {
       valid: false,
       special: null,
+      message: "Cannot capture your own piece.",
     };
   }
 
@@ -62,7 +67,8 @@ export function validateMove(
         board,
         from,
         to,
-        piece
+        piece,
+        lastMove
       );
 
     case "r":
@@ -105,13 +111,14 @@ export function validateMove(
       return {
         valid: false,
         special: null,
+        message: "Unknown piece.",
       };
   }
 }
 
 /* ---------------- Pawn ---------------- */
 
-function validatePawn(board, from, to, piece) {
+function validatePawn(board, from, to, piece, lastMove) {
   const direction =
     piece === piece.toUpperCase() ? -1 : 1;
 
@@ -162,9 +169,28 @@ function validatePawn(board, from, to, piece) {
     };
   }
 
+  // En Passant
+  if (
+    Math.abs(to.col - from.col) === 1 &&
+    to.row === from.row + direction &&
+    board[to.row][to.col] === "" &&
+    lastMove &&
+    lastMove.piece &&
+    lastMove.piece.toLowerCase() === "p" &&
+    Math.abs(lastMove.from.row - lastMove.to.row) === 2 &&
+    lastMove.to.row === from.row &&
+    lastMove.to.col === to.col
+  ) {
+    return {
+      valid: true,
+      special: "en-passant",
+    };
+  }
+
   return {
     valid: false,
     special: null,
+    message: "Illegal pawn move.",
   };
 }
 /* ---------------- Rook ---------------- */
@@ -174,6 +200,7 @@ function validateRook(board, from, to) {
     return {
       valid: false,
       special: null,
+      message: "Rook must move in a straight line.",
     };
   }
 
@@ -189,6 +216,7 @@ function validateRook(board, from, to) {
         return {
           valid: false,
           special: null,
+          message: "Path is blocked.",
         };
       }
     }
@@ -206,6 +234,7 @@ function validateRook(board, from, to) {
         return {
           valid: false,
           special: null,
+          message: "Path is blocked.",
         };
       }
     }
@@ -223,11 +252,14 @@ function validateKnight(from, to) {
   const row = Math.abs(from.row - to.row);
   const col = Math.abs(from.col - to.col);
 
+  const valid =
+    (row === 2 && col === 1) ||
+    (row === 1 && col === 2);
+
   return {
-    valid:
-      (row === 2 && col === 1) ||
-      (row === 1 && col === 2),
+    valid,
     special: null,
+    message: valid ? undefined : "Illegal knight move.",
   };
 }
 
@@ -241,6 +273,7 @@ function validateBishop(board, from, to) {
     return {
       valid: false,
       special: null,
+      message: "Bishop must move diagonally.",
     };
   }
 
@@ -255,6 +288,7 @@ function validateBishop(board, from, to) {
       return {
         valid: false,
         special: null,
+        message: "Path is blocked.",
       };
     }
 
@@ -276,7 +310,17 @@ function validateQueen(board, from, to) {
     return rookMove;
   }
 
-  return validateBishop(board, from, to);
+  const bishopMove = validateBishop(board, from, to);
+
+  if (bishopMove.valid) {
+    return bishopMove;
+  }
+
+  return {
+    valid: false,
+    special: null,
+    message: "Illegal queen move.",
+  };
 }
 
 /* ---------------- King ---------------- */
@@ -315,6 +359,12 @@ function validateKing(board, from, to, castleRights, turn) {
         special: "castle-king",
       };
     }
+
+    return {
+      valid: false,
+      special: null,
+      message: "Castling is not allowed.",
+    };
   }
 
   // -----------------------
@@ -340,6 +390,12 @@ function validateKing(board, from, to, castleRights, turn) {
         special: "castle-queen",
       };
     }
+
+    return {
+      valid: false,
+      special: null,
+      message: "Castling is not allowed.",
+    };
   }
 
   // -----------------------
@@ -364,6 +420,12 @@ function validateKing(board, from, to, castleRights, turn) {
         special: "castle-king",
       };
     }
+
+    return {
+      valid: false,
+      special: null,
+      message: "Castling is not allowed.",
+    };
   }
 
   // -----------------------
@@ -389,11 +451,18 @@ function validateKing(board, from, to, castleRights, turn) {
         special: "castle-queen",
       };
     }
+
+    return {
+      valid: false,
+      special: null,
+      message: "Castling is not allowed.",
+    };
   }
 
   return {
     valid: false,
     special: null,
+    message: "Illegal king move.",
   };
 }
 
@@ -403,20 +472,22 @@ export function validateCompleteMove(
   from,
   to,
   turn,
-  castleRights
+  castleRights,
+  lastMove
 ) {
   const result = validateMove(
     board,
     from,
     to,
     turn,
-    castleRights
+    castleRights,
+    lastMove
   );
 
   if (!result.valid) {
     return {
       valid: false,
-      message: "Illegal Move!",
+      message: result.message || "Illegal Move!",
       special: null,
     };
   }
