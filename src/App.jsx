@@ -35,6 +35,8 @@ function App() {
 
   const [status, setStatus] = useState("");
 
+  const [message, setMessage] = useState("");
+
   const [history, setHistory] = useState([]);
 
     const handleSquareClick = (row, col) => {
@@ -91,10 +93,19 @@ function App() {
     );
 
     if (!result.valid) {
-      setSelected(null);
-      setLegalMoves([]);
-      return;
-    }
+
+    setMessage("Illegal Move!");
+
+    setTimeout(() => {
+        setMessage("");
+    }, 2000);
+
+    setSelected(null);
+
+    setLegalMoves([]);
+
+    return;
+}
 
 
 
@@ -205,7 +216,17 @@ return (
       />
     </div>
 
-    <div className="right-panel">
+    <div className="-panel">
+
+
+      {
+message &&
+<div className="error-message">
+    {message}
+</div>
+}
+
+
 
       <h2>React Chess</h2>
 

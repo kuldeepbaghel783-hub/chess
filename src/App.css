@@ -232,3 +232,22 @@ body {
 
     color:#03a9f4;
 }
+
+
+.error-message{
+
+    background:#f44336;
+
+    color:white;
+
+    padding:10px;
+
+    border-radius:6px;
+
+    margin-bottom:15px;
+
+    text-align:center;
+
+    font-weight:bold;
+
+}
